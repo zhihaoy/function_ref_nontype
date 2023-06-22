@@ -22,7 +22,7 @@ template<class R, class... Args> struct _opt_fn_sig<R(Args...)>
         std::is_invocable_r_v<R, T..., Args...>;
 };
 
-template<class R, class... Args> struct _opt_fn_sig<R(Args......)>
+template<class R, class... Args> struct _opt_fn_sig<R(Args..., ...)>
 {
     using function_type = R(Args...);
     static constexpr bool is_variadic = true;
@@ -206,8 +206,8 @@ template<class S, class R, class... Args> class function<S, R(Args...)>
                            _copyable_function<R, _param_t<Args>..., va_list &>,
                            _copyable_function<R, _param_t<Args>...>>;
 
-    using lvalue_callable = copyable_function::lvalue_callable;
-    using empty_target_object = copyable_function::empty_target_object;
+    using lvalue_callable = typename copyable_function::lvalue_callable;
+    using empty_target_object = typename copyable_function::empty_target_object;
 
     struct typical_target_object : lvalue_callable
     {
@@ -220,15 +220,15 @@ template<class S, class R, class... Args> class function<S, R(Args...)>
 
     template<class F>
     using target_object_for =
-        copyable_function::template target_object<std::unwrap_ref_decay_t<F>>;
+        typename copyable_function::template target_object<std::unwrap_ref_decay_t<F>>;
 
     template<auto f>
     using unbound_target_object =
-        copyable_function::template unbound_target_object<f>;
+        typename copyable_function::template unbound_target_object<f>;
 
     template<auto f, class T>
     using bound_target_object_for =
-        copyable_function::template bound_target_object<
+        typename copyable_function::template bound_target_object<
             f, std::unwrap_ref_decay_t<T>>;
 
     template<class F, class FD = std::decay_t<F>>
@@ -344,7 +344,7 @@ template<class S, class R, class... Args> class function<S, R(Args...)>
 #pragma GCC diagnostic ignored "-Wunused-value"
 #endif
 
-    R operator()(Args... args...) const
+    R operator()(Args... args, ...) const
         requires(signature::is_variadic and sizeof...(Args) != 0)
     {
         struct raii
@@ -373,7 +373,7 @@ template<class R, class... Args> struct _strip_noexcept<R(Args...) noexcept>
     using type = R(Args...);
 };
 
-template<class S> using _strip_noexcept_t = _strip_noexcept<S>::type;
+template<class S> using _strip_noexcept_t = typename _strip_noexcept<S>::type;
 
 template<class F> requires std::is_function_v<F>
 function(F *) -> function<_strip_noexcept_t<F>>;

@@ -41,23 +41,23 @@ inline constexpr auto _select_param_type = []
 };
 
 template<class T>
-using _param_t = std::invoke_result_t<decltype(_select_param_type<T>)>::type;
+using _param_t = typename std::invoke_result_t<decltype(_select_param_type<T>)>::type;
 
 template<class T, class Self>
 inline constexpr bool _is_not_self =
     not std::is_same_v<std::remove_cvref_t<T>, Self>;
 
-template<class T, template<class> class>
+template<class T, template<class...> class>
 inline constexpr bool _looks_nullable_to_impl = std::is_member_pointer_v<T>;
 
-template<class F, template<class> class Self>
+template<class F, template<class...> class Self>
 inline constexpr bool _looks_nullable_to_impl<F *, Self> =
     std::is_function_v<F>;
 
 template<class... S, template<class...> class Self>
 inline constexpr bool _looks_nullable_to_impl<Self<S...>, Self> = true;
 
-template<class S, template<class> class Self>
+template<class S, template<class...> class Self>
 inline constexpr bool _looks_nullable_to =
     _looks_nullable_to_impl<std::remove_cvref_t<S>, Self>;
 
@@ -72,7 +72,7 @@ struct _adapt_signature<F *>
     using type = F;
 };
 
-template<class Fp> using _adapt_signature_t = _adapt_signature<Fp>::type;
+template<class Fp> using _adapt_signature_t = typename _adapt_signature<Fp>::type;
 
 template<class S> struct _not_qualifying_this
 {};
@@ -220,7 +220,7 @@ struct _drop_first_arg_to_invoke<M G::*, T> : _not_qualifying_this<M>
 {};
 
 template<class F, class T>
-using _drop_first_arg_to_invoke_t = _drop_first_arg_to_invoke<F, T>::type;
+using _drop_first_arg_to_invoke_t = typename _drop_first_arg_to_invoke<F, T>::type;
 
 } // namespace std23
 

@@ -91,7 +91,7 @@ class function_ref<Sig, R(Args...)> // freestanding
 {
     using signature = _qual_fn_sig<Sig>;
 
-    template<class T> using cv = signature::template cv<T>;
+    template<class T> using cv = typename signature::template cv<T>;
     template<class T> using cvref = cv<T> &;
     static constexpr bool noex = signature::is_noexcept;
 
