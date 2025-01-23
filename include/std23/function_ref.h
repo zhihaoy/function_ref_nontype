@@ -10,39 +10,20 @@ namespace std23
 
 template<class Sig> struct _qual_fn_sig;
 
-template<class R, class... Args> struct _qual_fn_sig<R(Args...)>
+template<class R, class... Args, bool NoEx> struct _qual_fn_sig<R(Args...) noexcept(NoEx)>
 {
     using function = R(Args...);
-    static constexpr bool is_noexcept = false;
+    static constexpr bool is_noexcept = NoEx;
 
     template<class... T>
     static constexpr bool is_invocable_using =
-        std::is_invocable_r_v<R, T..., Args...>;
+        NoEx ? std::is_nothrow_invocable_r_v<R, T..., Args...> : std::is_invocable_r_v<R, T..., Args...>;
 
     template<class T> using cv = T;
 };
 
-template<class R, class... Args> struct _qual_fn_sig<R(Args...) noexcept>
-{
-    using function = R(Args...);
-    static constexpr bool is_noexcept = true;
-
-    template<class... T>
-    static constexpr bool is_invocable_using =
-        std::is_nothrow_invocable_r_v<R, T..., Args...>;
-
-    template<class T> using cv = T;
-};
-
-template<class R, class... Args>
-struct _qual_fn_sig<R(Args...) const> : _qual_fn_sig<R(Args...)>
-{
-    template<class T> using cv = T const;
-};
-
-template<class R, class... Args>
-struct _qual_fn_sig<R(Args...) const noexcept>
-    : _qual_fn_sig<R(Args...) noexcept>
+template<class R, class... Args, bool NoEx>
+struct _qual_fn_sig<R(Args...) const noexcept(NoEx)> : _qual_fn_sig<R(Args...) noexcept(NoEx)>
 {
     template<class T> using cv = T const;
 };
